@@ -1,9 +1,6 @@
-try:
-    import regex as re
-except ImportError:
-    import re
+import re
 
-groups_per_regex = 600
+groups_per_regex = 75
 
 class ReDict(dict):
     """
