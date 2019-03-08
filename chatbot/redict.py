@@ -1,7 +1,5 @@
 import re
 
-groups_per_regex = 75
-
 class ReDict(dict):
     """
     Special dictionary which expects values to be *set* with regular expressions
@@ -27,33 +25,72 @@ class ReDict(dict):
     """
     def __init__(self, *args, **kwargs):
         super(ReDict, self).__init__(*args, **kwargs)
+
+        # This *must* be a power of 2, and *must* be lower than 100
+        self.groups_per_regex = 75
+
         self.flags = re.IGNORECASE
         self.groupid = 1
         self.compiled = None
         self.patterns = {}
 
-    def regexs(self):
-        i = 0
-        block = []
+    def _block_to_regexs(self, block):
+        total_len = len(block)
+        override_slice = None
+        num_regexs = 1
+        start = 0
         ret = []
+        end = 0
+        i = 0
+
+        while True:
+            slice_size = total_len / num_regexs
+
+            while start < (total_len - 1):
+                start = i * slice_size                   # Slice start index
+                end = min(total_len, start + slice_size) # Slice end index
+                blockslice = block[start:end]
+                regex = '|'.join(blockslice)
+
+                try:
+                    compiled = re.compile(regex, flags=self.flags)
+                except AssertionError:
+                    # Raises AssertionError for too many named groups
+                    if (num_regexs == total_len) or (len(block) == 1):
+                        raise AssertionError("Too many groups in regex '%s'"
+                            % regex)
+
+                    num_regexs *= 2
+                    i = 0
+                    ret = []
+                    break
+
+                i += 1
+                ret.append(compiled)
+
+            if ret:
+                break
+
+        return ret
+
+    def compile(self):
+        i = 0
+        ret = []
+        block = []
+        self.compiled = []
 
         for groupname in self.patterns:
             pattern, _ = self.patterns[groupname]
             block.append('(?P<%s>^%s$)' % (groupname, pattern))
             i += 1
 
-            if i == groups_per_regex:
-                ret.append('|'.join(block))
+            if i == self.groups_per_regex:
+                self.compiled.extend(self._block_to_regexs(block))
                 i = 0
                 block = []
 
         if block:
-            ret.append('|'.join(block))
-
-        return ret
-
-    def compile(self):
-        self.compiled = [re.compile(r, flags=self.flags) for r in self.regexs()]
+            self.compiled.extend(self._block_to_regexs(block))
 
     def dump_to_dict(self):
         ret = {}
@@ -76,19 +113,19 @@ class ReDict(dict):
         if not self.compiled:
             self.compile()
 
+        ret = None
         m = None
         for compiled in self.compiled:
             m = compiled.match(text)
-            if m:
+            if m and m.lastgroup:
+                ret = m
                 break
 
-        if not m:
+        if not ret:
             raise KeyError("No patterns matching '%s' in dict" % text)
 
-        if not m.lastgroup:
-            raise KeyError("No patterns matching '%s' in dict" % text)
+        return ret
 
-        return m
 
     def __setitem__(self, pattern, value):
         if not pattern:
@@ -134,6 +171,9 @@ class ReDict(dict):
 
     def __repr__(self):
         return repr(self.dump_to_dict())
+
+    def __len__(self):
+        return len(self.patterns)
 
     def clear(self):
         self.groupid = 1
