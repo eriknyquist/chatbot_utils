@@ -34,6 +34,22 @@ class Context(object):
         if lists:
             self._build_from_lists(lists)
 
+    def compile(self):
+        """
+        Compile all regular expressions contained in this context so they are
+        ready for immediate matching
+        """
+        if self.entry:
+            self.entry.compile()
+
+        if self.responses:
+            self.responses.compile()
+
+        if self.chains:
+            for chain in self.chains:
+                for responsedict in chain:
+                    responsedict.compile()
+
     def add_chained_phrases(self, *pattern_response_pairs):
         """
         Add multiple chained pattern/response pairs. A chain defines a sequence
@@ -157,6 +173,18 @@ class Responder(object):
 
         self.context = None
         self.contexts = []
+
+    def compile(self):
+        """
+        Compile all regular expressions contained in this responder (including
+        contexts), so they are ready for matching immediately
+        """
+        if self.responses:
+            self.responses.compile()
+
+        if self.contexts:
+            for context in self.contexts:
+                context.compile()
 
     def add_default_response(self, response):
         """
