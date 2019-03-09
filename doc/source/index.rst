@@ -7,8 +7,7 @@ Welcome to ReDict's documentation!
 ==================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :caption: API Documentation:
 
    modules
 
