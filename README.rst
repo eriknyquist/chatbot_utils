@@ -38,7 +38,7 @@ From Github
 Example bot with chatbot_utils
 ------------------------------
 
-::
+.. code-block:: python
 
     import random
     import time
