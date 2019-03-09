@@ -46,7 +46,7 @@ class ReDict(dict):
         while True:
             slice_size = total_len / num_regexs
 
-            while start < (total_len - 1):
+            while start < total_len:
                 start = i * slice_size                   # Slice start index
                 end = min(total_len, start + slice_size) # Slice end index
                 blockslice = block[start:end]
