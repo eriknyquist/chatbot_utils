@@ -82,7 +82,7 @@ Example bot with chatbot_utils
     while True:
         text = raw_input(" > ")
         resp = responder.get_response(text)
-    print("\n\"%s\"\n" % (random.choice(resp)))
+        print("\n\"%s\"\n" % (random.choice(resp)))
 
 Save this file as ``simple_bot.py`` and run it with ``python simple_bot.py``.
 Example output:
