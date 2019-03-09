@@ -26,7 +26,7 @@ class ReDict(dict):
     def __init__(self, *args, **kwargs):
         super(ReDict, self).__init__(*args, **kwargs)
 
-        # This *must* be a power of 2, and *must* be lower than 100
+        # This *must* be lower than 100
         self.groups_per_regex = 75
 
         self.flags = re.IGNORECASE
@@ -74,6 +74,9 @@ class ReDict(dict):
         return ret
 
     def compile(self):
+        """
+        Compile all regular expressions in the dictionary
+        """
         i = 0
         ret = []
         block = []
@@ -93,6 +96,13 @@ class ReDict(dict):
             self.compiled.extend(self._block_to_regexs(block))
 
     def dump_to_dict(self):
+        """
+        Dump all pattern/value pairs to a regular dict, where the regular
+        expressions are the keys
+
+        :return: dict of pattern/value pairs
+        :rtype: dict
+        """
         ret = {}
         for pattern, value in self.iteritems():
             ret[pattern] = value
@@ -100,6 +110,12 @@ class ReDict(dict):
         return ret
 
     def load_from_dict(self, data):
+        """
+        Load pattern/value pairs from a regular dict. This overwrites any
+        existing pattern/value pairs
+
+        :param dict data: pattern/value pairs to load
+        """
         self.groupid = 1
         self.compiled = None
         self.patterns = {}
@@ -150,6 +166,13 @@ class ReDict(dict):
         return True
 
     def pop(self, text):
+        """
+        Return and delete the first value associated with a pattern matching
+        'text'
+
+        :param str text: text to match against
+        :return: value associated with pattern matching 'text' (if any)
+        """
         m = self._do_match(text)
         ret = self.patterns[m.lastgroup][1]
         del self.patterns[m.lastgroup]
@@ -160,9 +183,38 @@ class ReDict(dict):
         return ret
 
     def items(self):
+        """
+        Return all values stored in this dict
+
+        :return: list of values
+        :rtype: list
+        """
         return [self.patterns[groupname] for groupname in self.patterns]
 
+    def values(self):
+        """
+        Return all values stored in this dict
+
+        :return: list of values
+        :rtype: list
+        """
+        return [value for _, value in self.iteritems()]
+
+    def keys(self):
+        """
+        Return all keys stored in this dict
+
+        :return: list of keys
+        :rtype: list
+        """
+        return [pattern for pattern, _ in self.iteritems()]
+
     def iteritems(self):
+        """
+        Returns a generator to get all key/value pairs stored in this dict
+
+        :return: generator to get pattern/value pairs
+        """
         for groupname in self.patterns:
             yield self.patterns[groupname]
 
@@ -176,11 +228,21 @@ class ReDict(dict):
         return len(self.patterns)
 
     def clear(self):
+        """
+        Clear all key/value pairs stored in this dict
+        """
         self.groupid = 1
         self.compiled = None
         self.patterns.clear()
 
     def copy(self):
+        """
+        Create a new ReDict instance and copy all items in this dict into the
+        new instance
+
+        :return: new ReDict instance containing copied data
+        :rtype: ReDict
+        """
         new = ReDict()
         for pattern, value in self.iteritems():
             new[pattern] = value
@@ -188,11 +250,10 @@ class ReDict(dict):
         return new
 
     def update(self, other):
+        """
+        Add items from 'other' into this dict
+
+        :param ReDict other: dict containing items to copy
+        """
         for pattern, value in other.iteritems():
             self.__setitem__(pattern, value)
-
-    def keys(self):
-        return [pattern for pattern, _ in self.iteritems()]
-
-    def values(self):
-        return [value for _, value in self.iteritems()]

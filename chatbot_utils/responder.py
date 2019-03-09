@@ -1,4 +1,4 @@
-from chatbot.redict import ReDict
+from chatbot_utils.redict import ReDict
 
 def _check_get_response(responsedict, text):
     try:
