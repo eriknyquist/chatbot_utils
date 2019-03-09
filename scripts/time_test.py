@@ -50,7 +50,7 @@ def test_redict_speed(num_items, start=0, dictobj=None):
     return compile_time, get_time / float(num_get_tests)
 
 step = 1000
-max_value = 100000
+max_value = 25000
 
 iterations = max_value / step
 compile_times = []
