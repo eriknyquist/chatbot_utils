@@ -24,8 +24,6 @@ def set_bedtime_handler(groups):
     bedtime_string = groups[1]
     bedtime_string = bedtime_string.replace(':', '.')
     fields = bedtime_string.split('.')
-    import pdb
-    pdb.set_trace()
     if len(fields) != 2:
         return "Can't understand time format, please use HH:MM format with 24 hours"
 
