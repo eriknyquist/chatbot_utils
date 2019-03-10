@@ -9,15 +9,20 @@ def _check_get_response(responsedict, text):
     return response, responsedict.groups()
 
 def _check_pattern_response_pair(pair):
+    regex = None
     if len(pair) != 2:
         raise ValueError("Pattern response pair must contain two items")
 
     patterns, response = pair
-    if type(patterns) != list:
+    if isinstance(patterns, list):
+        regex = "|".join(patterns)
+    elif isinstance(patterns, basestring):
+        regex = patterns
+    else:
         raise ValueError("First item in pattern response pair must be "
-            "a list")
+            "a list or a string")
 
-    return patterns, response
+    return regex, response
 
 class Context(object):
     """
@@ -50,6 +55,8 @@ class Context(object):
                 for responsedict in chain:
                     responsedict.compile()
 
+        return self
+
     def add_chained_phrases(self, *pattern_response_pairs):
         """
         Add multiple chained pattern/response pairs. A chain defines a sequence
@@ -63,17 +70,37 @@ class Context(object):
 
         :param pattern_response_pairs: one or more pattern/response pairs, \
             where a pattern/response pair is a tuple of the form \
-            ``(regex_list, value)``, where ``regex_list`` is a list of regular \
-            expression strings and ``value`` is an arbitrary object
+            ``(regexs, value)``, where ``regexs`` is a regular expression or \
+            list of regular expressions and ``value`` is an arbitrary object
         """
         chain = []
         for pair in pattern_response_pairs:
-            patterns, response = _check_pattern_response_pair(pair)
+            pattern, response = _check_pattern_response_pair(pair)
             responsedict = ReDict()
-            responsedict['|'.join(patterns)] = response
+            responsedict[pattern] = response
             chain.append(responsedict)
 
         self.chains.append(chain)
+        return self
+
+    def add_entry_phrase(self, patterns, response):
+        """
+        Add a pattern/response pair to be used as an entry point for
+        this context. If input matching matching one of the patterns passed here
+        is seen, Responders will return the corresponding response object and
+        enter the context.
+
+        :param patterns: regular expression or list of regular expressions. If \
+            the input passed to ``get_response`` matches one of these \
+            patterns, then the object passed here as ``response`` will be \
+            returned.
+        :param object response: object to return from ``get_response`` if the \
+            passed input matches one of the regular expressions passed here as
+            ``response``.
+        """
+        pattern, response = _check_pattern_response_pair((patterns, response))
+        self.entry[pattern] = response
+        return self
 
     def add_entry_phrases(self, *pattern_response_pairs):
         """
@@ -84,27 +111,30 @@ class Context(object):
 
         :param pattern_response_pairs: one or more pattern/response pairs, \
             where a pattern/response pair is a tuple of the form \
-            ``(regex_list, value)``, where ``regex_list`` is a list of regular \
-            expression strings and ``value`` is an arbitrary object
+            ``(regexs, value)``, where ``regexs`` is a regular expression or \
+            list of regular expressions and ``value`` is an arbitrary object
         """
         for pair in pattern_response_pairs:
-            patterns, response = _check_pattern_response_pair(pair)
-            self.entry['|'.join(patterns)] = response
+            self.add_entry_phrase(*pair)
+
+        return self
 
     def add_response(self, patterns, response):
         """
         Add a pattern/response pair that will be only be recognized
         when a Responder is in this context
 
-        :param list patterns: list of regular expressions. If the input passed \
-            to ``get_response`` matches one of these patterns, then the object \
-            passed here as ``response`` will be returned.
+        :param patterns: regular expression or list of regular \
+            expressions. If the input passed to ``get_response`` matches one \
+            of these patterns, then the object passed here as ``response`` \
+            will be returned.
         :param object response: object to return from ``get_response`` if the \
             passed input matches one of the regular expressions passed here as
             ``response``.
         """
-        patterns, response = _check_pattern_response_pair((patterns, response))
-        self.responses['|'.join(patterns)] = response
+        pattern, response = _check_pattern_response_pair((patterns, response))
+        self.responses[pattern] = response
+        return self
 
     def add_responses(self, *pattern_response_pairs):
         """
@@ -113,11 +143,13 @@ class Context(object):
 
         :param pattern_response_pairs: one or more pattern/response pairs, \
             where a pattern/response pair is a tuple of the form \
-            ``(regex_list, value)``, where ``regex_list`` is a list of regular \
-            expression strings and ``value`` is an arbitrary object
+            ``(regexs, value)``, where ``regexs`` is a regular expression or \
+            list of regular expressions and ``value`` is an arbitrary object
         """
         for pair in pattern_response_pairs:
             self.add_response(*pair)
+
+        return self
 
     def _search_chains(self, text):
         for chain in self.chains:
@@ -199,6 +231,8 @@ class Responder(object):
             for context in self.contexts:
                 context.compile()
 
+        return self
+
     def add_default_response(self, response):
         """
         Set response to return when no other matching responses can be found
@@ -206,6 +240,7 @@ class Responder(object):
         :param response: object to return as default response
         """
         self.default_response = response
+        return self
 
     def add_response(self, patterns, response):
         """
@@ -219,7 +254,22 @@ class Responder(object):
             passed input matches one of the regular expressions passed here as
             ``response``.
         """
-        self.responses['|'.join(patterns)] = response
+        pattern, response = _check_pattern_response_pair((patterns, response))
+        self.responses[pattern] = response
+        return self
+
+    def add_responses(self, *pattern_response_pairs):
+        """
+        Add one or moe pattern/response pairs that will always be recognized
+        by a Responder, regardless of context
+
+        :param pattern_response_pairs: one or more pattern/response pairs, \
+            where a pattern/response pair is a tuple of the form \
+            ``(regexs, value)``, where ``regexs`` is a regular expression or \
+            list of regular expressions and ``value`` is an arbitrary object
+        """
+        for pair in pattern_response_pairs:
+            self.add_response(*pair)
 
     def add_context(self, context):
         """
@@ -231,6 +281,7 @@ class Responder(object):
             raise ValueError("add_context argument must be a Context instance")
 
         self.contexts.append(context)
+        return self
 
     def add_contexts(self, *contexts):
         """
@@ -241,19 +292,7 @@ class Responder(object):
         for context in contexts:
             self.add_context(context)
 
-    def add_responses(self, *pattern_response_pairs):
-        """
-        Add one or moe pattern/response pairs that will always be recognized
-        by a Responder, regardless of context
-
-        :param pattern_response_pairs: one or more pattern/response pairs, \
-            where a pattern/response pair is a tuple of the form \
-            ``(regex_list, value)``, where ``regex_list`` is a list of regular \
-            expression strings and ``value`` is an arbitrary object
-        """
-        for pair in pattern_response_pairs:
-            patterns, response = _check_pattern_response_pair(pair)
-            self.add_response(patterns, response)
+        return self
 
     def _attempt_context_entry(self, text):
         for context in self.contexts:
