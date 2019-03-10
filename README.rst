@@ -150,6 +150,11 @@ and was of the following form:
 
     foo? 10|bar* 10
 
+The *Time to compile* was calculated simply by timing the ``ReDict.compile()``
+method. The *Time to fetch* is an average calculated by randomly fetching 10% of
+the total number of items in the dict (e.g. for a dict with 1000 pattern/value
+pairs added, 100 randomly-selected items would be fetched).
+
 .. image:: images/100000_items_no_extra_groups.png
 
 Analysis: compile time & fetch time with 100k items, extra parenthesis groups
@@ -162,5 +167,9 @@ and was of the following form (note the addition parenthesis groups):
 ::
 
     (f)(o)o? 10|b((a)(r)*) 10
+
+Same as the previous test, the *Time to compile* was calculated by timing the
+``ReDict.compile()`` method, and the *Time to fetch* is an average calculated by
+randomly fetching 10% of the total number of items in the dict.
 
 .. image:: images/100000_items_extra_groups.png
