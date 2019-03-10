@@ -4,9 +4,9 @@ def _check_get_response(responsedict, text):
     try:
         response = responsedict[text]
     except KeyError:
-        return None
+        return None, None
 
-    return response
+    return response, responsedict.groups()
 
 def _check_pattern_response_pair(pair):
     if len(pair) != 2:
@@ -112,33 +112,33 @@ class Context(object):
     def _search_chains(self, text):
         for chain in self.chains:
             if (len(chain) > 0):
-                resp = _check_get_response(chain[0], text)
+                resp, groups = _check_get_response(chain[0], text)
                 if resp:
-                    return chain, resp
+                    return chain, resp, groups
 
-        return None, None
+        return None, None, None
 
     def _get_chained_response(self, text):
         if not self.chain:
-            chain, response = self._search_chains(text)
+            chain, response, groups  = self._search_chains(text)
             if chain:
                 self.chain = chain
                 self.chain_index = 1
-                return response
+                return response, groups
 
-            return None
+            return None, None
 
         responsedict = self.chain[self.chain_index]
-        resp = _check_get_response(responsedict, text)
+        resp, groups = _check_get_response(responsedict, text)
 
         if resp:
             if self.chain_index < (len(self.chain) - 1):
                 self.chain_index += 1
         elif self.chain_index > 0:
             responsedict = self.chain[self.chain_index - 1]
-            resp = _check_get_response(responsedict, text)
+            resp, groups = _check_get_response(responsedict, text)
 
-        return resp
+        return resp, groups
 
     def get_response(self, text):
         """
@@ -147,16 +147,19 @@ class Context(object):
         found, 'text' itself will be returned.
 
         :param str text: input text to check for matching patterns against
-        :return: response object associated with matching pattern if found, \
-            otherwise 'text'
+        :return: tuple of the form ``(response, groups)``. ``response`` is the \
+            response object associated with the matching regular expression, \
+            if any, otherwise 'text'. ``groups`` is a tuple of subgroups from \
+            the regular expression match (as returned by \
+            re.MatchObject.groups), if any, otherwise None.
         """
-        resp = self._get_chained_response(text)
+        resp, groups = self._get_chained_response(text)
         if resp:
-            return resp
+            return resp, groups
 
-        resp = _check_get_response(self.responses, text)
+        resp, groups = _check_get_response(self.responses, text)
         if resp:
-            return resp
+            return resp, groups
 
         return _check_get_response(self.entry, text)
 
@@ -244,12 +247,12 @@ class Responder(object):
 
     def _attempt_context_entry(self, text):
         for context in self.contexts:
-            response = _check_get_response(context.entry, text)
+            response, groups = _check_get_response(context.entry, text)
             if response:
                 self.context = context
-                return response
+                return response, groups
 
-        return None
+        return None, None
 
     def get_response(self, text):
         """
@@ -258,19 +261,23 @@ class Responder(object):
         itself will be returned.
 
         :param str text: input text to check for matching patterns against
-        :return: response object associated with matching pattern if found, \
-            otherwise 'text'
+        :return: tuple of the form ``(response, groups)``. ``response`` is the \
+            response object associated with the matching regular expression, \
+            if any, otherwise 'text'. ``groups`` is a tuple of subgroups from \
+            the regular expression match (as returned by \
+            re.MatchObject.groups), if any, otherwise None.
         """
         response = None
+        groups = None
 
         # If currently in a context, try to get a response from the context
         if self.context:
-            response = self.context.get_response(text)
+            response, groups = self.context.get_response(text)
 
         # If no contextual response is available, try to get a response from
         # the dict of contextless responses
         if not response:
-            response = _check_get_response(self.responses, text)
+            response, groups = _check_get_response(self.responses, text)
             if response:
                 # If we are currently in a context but only able to get a
                 # matching response from the contextless dict, set the current
@@ -279,11 +286,12 @@ class Responder(object):
                     self.context = None
             else:
                 # No contextless responses available, attempt context entry
-                response = self._attempt_context_entry(text)
+                response, groups = self._attempt_context_entry(text)
                 if not response:
                     response = self.default_response
+                    groups = None
 
         if not response:
-            return text
+            return text, None
 
-        return response
+        return response, groups

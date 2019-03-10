@@ -33,6 +33,17 @@ class ReDict(dict):
         self.groupid = 1
         self.compiled = None
         self.patterns = {}
+        self.subgroups = None
+
+    def groups(self):
+        """
+        Return tuple of all subgroups from the last regex match performed
+        when fetching an item, as returned by re.MatchObject.groups()
+
+        :return: tuple of subgroups from last match
+        :rtype: tuple
+        """
+        return self.subgroups
 
     def _block_to_regexs(self, block):
         total_len = len(block)
@@ -155,6 +166,7 @@ class ReDict(dict):
 
     def __getitem__(self, text):
         m = self._do_match(text)
+        self.subgroups = m.groups()[m.lastindex:]
         return self.patterns[m.lastgroup][1]
 
     def __contains__(self, text):
