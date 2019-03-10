@@ -91,6 +91,21 @@ class Context(object):
             patterns, response = _check_pattern_response_pair(pair)
             self.entry['|'.join(patterns)] = response
 
+    def add_response(self, patterns, response):
+        """
+        Add a pattern/response pair that will be only be recognized
+        when a Responder is in this context
+
+        :param list patterns: list of regular expressions. If the input passed \
+            to ``get_response`` matches one of these patterns, then the object \
+            passed here as ``response`` will be returned.
+        :param object response: object to return from ``get_response`` if the \
+            passed input matches one of the regular expressions passed here as
+            ``response``.
+        """
+        patterns, response = _check_pattern_response_pair((patterns, response))
+        self.responses['|'.join(patterns)] = response
+
     def add_responses(self, *pattern_response_pairs):
         """
         Add one more more pattern/response pairs that will be only be recognized
@@ -102,12 +117,7 @@ class Context(object):
             expression strings and ``value`` is an arbitrary object
         """
         for pair in pattern_response_pairs:
-            patterns, response = _check_pattern_response_pair(pair)
-            if type(patterns) != list:
-                raise ValueError("First item in pattern response pair must be "
-                    "a list")
-
-            self.responses['|'.join(patterns)] = response
+            self.add_response(*pair)
 
     def _search_chains(self, text):
         for chain in self.chains:
