@@ -26,7 +26,7 @@ if os.path.exists(REQFILE):
 
 setup(
     name='chatbot_utils',
-    version='0.12',
+    version='0.1',
     description=('Tools for creating chatbots'),
     long_description=long_description,
     url='http://github.com/eriknyquist/chatbot_utils',
