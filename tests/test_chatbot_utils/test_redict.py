@@ -3,6 +3,17 @@ from unittest import TestCase
 from chatbot_utils.redict import ReDict
 
 class TestReDict(TestCase):
+    def fill_redict(self, dictobj=None, numitems=1000):
+        if not dictobj:
+            dictobj = ReDict()
+
+        testitems = {"((foo+|bar*) )?%d" % i : i for i in range(numitems)}
+
+        for key, val in testitems.iteritems():
+            dictobj[key] = val
+
+        return testitems, dictobj
+
     def test_all_items_accessible(self):
         num_iterations = 50
         d = ReDict()
@@ -84,16 +95,7 @@ class TestReDict(TestCase):
         self.assertEqual(groups[2], val3)
 
     def test_dump_to_dict(self):
-        testitems = {
-            "a+": 1,
-            "b*": 2,
-            "c?": 3
-        }
-
-        d = ReDict()
-        for key in testitems:
-            d[key] = testitems[key]
-
+        testitems, d = self.fill_redict()
         dumped = d.dump_to_dict()
 
         for key in dumped:
@@ -119,3 +121,53 @@ class TestReDict(TestCase):
         self.assertEqual(testitems["x+"], loaded_redict["xxxx"])
         self.assertEqual(testitems["y?"], loaded_redict["y"])
         self.assertEqual(testitems["z*"], loaded_redict["zz"])
+
+    def test_pop(self):
+        d = ReDict()
+        d["a+"] = 1
+        d["b+"] = 2
+
+        self.assertEqual(2, len(d))
+        self.assertEqual(d["aaa"], 1)
+        self.assertEqual(d["bbb"], 2)
+
+        self.assertEqual(d.pop("b"), 2)
+        self.assertEqual(1, len(d))
+
+        self.assertEqual(d["aaa"], 1)
+        self.assertRaises(KeyError, d.__getitem__, "bbb")
+
+    def test_items(self):
+        testitems, d = self.fill_redict()
+        redict_items = d.items()
+        self.assertEqual(len(redict_items), len(testitems))
+
+        for key, value in redict_items:
+            self.assertTrue(key in testitems)
+            self.assertEqual(value, testitems[key])
+
+    def test_values(self):
+        testitems, d = self.fill_redict()
+        redict_values = d.values()
+        self.assertEqual(len(redict_values), len(testitems))
+
+        for value in redict_values:
+            self.assertTrue(value in testitems.values())
+
+    def test_keys(self):
+        testitems, d = self.fill_redict()
+        redict_keys = d.keys()
+        self.assertEqual(len(redict_keys), len(testitems))
+
+        for key in redict_keys:
+            self.assertTrue(key in testitems)
+
+    def test_iteritems(self):
+        item_count = 0
+        testitems, d = self.fill_redict()
+        for key, value in d.iteritems():
+            self.assertTrue(key in testitems)
+            self.assertEqual(value, testitems[key])
+            item_count += 1
+
+        self.assertEqual(item_count, len(testitems))
