@@ -24,6 +24,14 @@ def _check_pattern_response_pair(pair):
 
     return regex, response
 
+def _attempt_context_entry(contexts, text):
+    for context in contexts:
+        response, groups = _check_get_response(context.entry, text)
+        if response:
+            return context, response, groups
+
+    return None, None, None
+
 class Context(object):
     """
     Class representing a "discussion" context, allowing for a Responder that
@@ -35,6 +43,7 @@ class Context(object):
         self.chains = []
         self.chain = None
         self.chain_index = 0
+        self.contexts = []
 
         if lists:
             self._build_from_lists(lists)
@@ -148,6 +157,29 @@ class Context(object):
         """
         for pair in pattern_response_pairs:
             self.add_response(*pair)
+
+        return self
+
+    def add_context(self, context):
+        """
+        Add Context that can only be entered when already in this context
+
+        :param Context context: context instance to add
+        """
+        if not isinstance(context, Context):
+            raise ValueError("add_context argument must be a Context instance")
+
+        self.contexts.append(context)
+        return self
+
+    def add_contexts(self, *contexts):
+        """
+        Add one or more Context instances to this context
+
+        :param Context contexts: context instances to add
+        """
+        for context in contexts:
+            self.add_context(context)
 
         return self
 
@@ -294,15 +326,6 @@ class Responder(object):
 
         return self
 
-    def _attempt_context_entry(self, text):
-        for context in self.contexts:
-            response, groups = _check_get_response(context.entry, text)
-            if response:
-                self.context = context
-                return response, groups
-
-        return None, None
-
     def get_response(self, text):
         """
         Find a response object associated with a pattern that matches 'text',
@@ -322,6 +345,13 @@ class Responder(object):
         # If currently in a context, try to get a response from the context
         if self.context:
             response, groups = self.context.get_response(text)
+            if not response:
+                # Try entering subcontexts contained in current context, if any
+                context, response, groups = _attempt_context_entry(
+                    self.context.contexts, text)
+
+                if context:
+                    self.context = context
 
         # If no contextual response is available, try to get a response from
         # the dict of contextless responses
@@ -335,8 +365,12 @@ class Responder(object):
                     self.context = None
             else:
                 # No contextless responses available, attempt context entry
-                response, groups = self._attempt_context_entry(text)
-                if not response:
+                context, response, groups = _attempt_context_entry(
+                    self.contexts, text)
+
+                if context:
+                    self.context = context
+                else:
                     response = self.default_response
                     groups = None
 
