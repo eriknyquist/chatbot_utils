@@ -1,3 +1,25 @@
+# Shows how to use the 'groups' value returned by get_response() to obtain
+# input from the person speaking with a bot
+#
+# Example usage:
+#
+#    $> python examples/bedtime_bot.py
+#
+#    > hey, what time is it?
+#    "The time is 18:31"
+#    > is that past my bedtime?
+#    "You haven't told me what your bedtime is yet."
+#    > ok, remember that my bedtime is 23:00
+#    "OK, I'll remember that your bedtime is 23:00"
+#    > is it past my bedtime yet?
+#    "No, your bedtime is at 23:00"
+#    > OK, now my bedtime is 18:31
+#    "OK, I'll remember that your bedtime is 18:31"
+#    > what time is it now?
+#    "The time is 18:32"
+#    > is that past my bedtime?
+#    "Yes, your bedtime was at 18:31"
+
 import time
 from datetime import timedelta
 
@@ -21,7 +43,10 @@ def ask_bedtime_handler(groups):
     return "Your bedtime is %02d:%02d" % (hour, minute)
 
 def set_bedtime_handler(groups):
+    # We are expecting the time to be in the 2nd paren. group of the regex
+    # associated with this handler
     bedtime_string = groups[1]
+
     bedtime_string = bedtime_string.replace(':', '.')
     fields = bedtime_string.split('.')
     if len(fields) != 2:
@@ -40,6 +65,9 @@ def set_bedtime_handler(groups):
 def bedtime_handler(groups):
     hour, minute = current_time()
     bedtime_hour, bedtime_minute = bedtime
+    if not bedtime_hour:
+        return "You haven't told me what your bedtime is yet."
+
     bedtimestr = "%02d:%02d" % (bedtime_hour, bedtime_minute)
     bedtime_td = timedelta(hours=bedtime_hour, minutes=bedtime_minute)
     now_td = timedelta(hours=hour, minutes=minute)

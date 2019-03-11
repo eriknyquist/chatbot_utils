@@ -1,3 +1,22 @@
+# Shows how to use Context objects
+#
+# Example usage:
+#
+#    $> python examples/simple_context_bot.py
+#
+#     > hey, let's talk about cats
+#     "Sure, I love cats"
+#     > what's you favourite thing about them?
+#     "They are fuzzy"
+#     > do you have one?
+#     "No, computer programs can't have cats."
+#     > OK, let's talk about dogs now
+#     "Sure, I think dogs are great"
+#     > do you have one?
+#     "No, computer programs can't have dogs."
+#     > what's your favourite thing about them?
+#     "They are loyal"
+
 import random
 import time
 
