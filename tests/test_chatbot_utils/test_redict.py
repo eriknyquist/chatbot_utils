@@ -171,3 +171,75 @@ class TestReDict(TestCase):
             item_count += 1
 
         self.assertEqual(item_count, len(testitems))
+
+    def test_clear(self):
+        d = ReDict()
+        testitems = {
+            "q+": 4,
+            "r*": 5,
+            "s?": 6
+        }
+
+        for key, val in testitems.iteritems():
+            d[key] = val
+
+        self.assertEqual(d["qqq"], 4)
+        self.assertEqual(len(testitems), len(d))
+
+        d.clear()
+        self.assertEqual(0, len(d))
+        self.assertRaises(KeyError, d.__getitem__, "qqq")
+
+    def test_copy(self):
+        d = ReDict()
+        testitems = {
+            "xyz+": 4,
+            "ab*c": 5,
+            "def?": 6
+        }
+
+        for key, val in testitems.iteritems():
+            d[key] = val
+
+        d2 = d.copy()
+
+        self.assertEqual(len(d), len(d2))
+        for key, val in d.iteritems():
+            self.assertTrue(key in d2.keys())
+            self.assertTrue(val in d2.values())
+
+        self.assertEqual(d2["xyz"], d["xyz"])
+        self.assertEqual(d2["abbbc"], d["abbbc"])
+        self.assertEqual(d2["def"], d["def"])
+
+    def test_update(self):
+        d1 = ReDict()
+        d2 = ReDict()
+        testitems = {
+            "xyz+": 4,
+            "ab*c": 5,
+            "def?": 6
+        }
+
+        updateitems = {
+            "q+": 1,
+            "r*": 2,
+            "s?": 3
+        }
+
+        for key, val in testitems.iteritems():
+            d1[key] = val
+
+        for key, val in updateitems.iteritems():
+            d2[key] = val
+
+        d1.update(d2)
+        self.assertEqual(len(d1), len(testitems) + len(updateitems))
+
+        for key, val in testitems.iteritems():
+            self.assertTrue(key in d1.keys())
+            self.assertTrue(val in d1.values())
+
+        for key, val in updateitems.iteritems():
+            self.assertTrue(key in d1.keys())
+            self.assertTrue(val in d1.values())
