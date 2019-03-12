@@ -2,6 +2,16 @@ import re
 from unittest import TestCase
 from chatbot_utils.responder import Responder, Context
 
+def iterate_redicts(responder):
+    yield responder.responses
+    for context in responder.contexts:
+        yield context.responses
+        yield context.entry
+
+        for chain in context.chains:
+            for responsedict in chain:
+                yield responsedict
+
 class TestResponder(TestCase):
     def test_compile(self):
         r = Responder().add_response("f?", 0)
@@ -22,14 +32,8 @@ class TestResponder(TestCase):
         r.add_contexts(c1, c2)
 
         # Verify nothing's been compiled yet
-        self.assertFalse(r.responses.compiled)
-        for context in r.contexts:
-            self.assertFalse(context.responses.compiled)
-            self.assertFalse(context.entry.compiled)
-
-            for chain in context.chains:
-                for responsedict in chain:
-                    self.assertFalse(responsedict.compiled)
+        for responsedict in iterate_redicts(r):
+            self.assertFalse(responsedict.compiled)
 
         # Get type of compiled regex
         retype = type(re.compile("abc+"))
@@ -38,21 +42,7 @@ class TestResponder(TestCase):
         r.compile()
 
         # Verify everything's compiled now
-        self.assertTrue(len(r.responses.compiled) > 0)
-        for compiled in r.responses.compiled:
-            self.assertEqual(type(compiled), retype)
-
-        for context in r.contexts:
-            self.assertTrue(len(context.responses.compiled) > 0)
-            for compiled in context.responses.compiled:
+        for responsedict in iterate_redicts(r):
+            self.assertTrue(len(responsedict.compiled) > 0)
+            for compiled in responsedict.compiled:
                 self.assertEqual(type(compiled), retype)
-
-            self.assertTrue(len(context.entry.compiled) > 0)
-            for compiled in context.entry.compiled:
-                self.assertEqual(type(compiled), retype)
-
-            for chain in context.chains:
-                for responsedict in chain:
-                    self.assertTrue(len(responsedict.compiled) > 0)
-                    for compiled in responsedict.compiled:
-                        self.assertEqual(type(compiled), retype)
