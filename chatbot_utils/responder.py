@@ -235,10 +235,15 @@ class Context(object):
             return resp, groups
 
         resp, groups = _check_get_response(self.responses, text)
-        if resp != NoResponse:
-            return resp, groups
+        if resp == NoResponse:
+            resp, groups = _check_get_response(self.entry, text)
 
-        return _check_get_response(self.entry, text)
+        # If we got a response from anything other than a chain, make
+        # sure we exit any current chains by setting self.chain = False
+        if resp != NoResponse:
+            self.chain = None
+
+        return resp, groups
 
 class Responder(object):
     """
