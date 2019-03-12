@@ -303,6 +303,8 @@ class Responder(object):
         for pair in pattern_response_pairs:
             self.add_response(*pair)
 
+        return self
+
     def add_context(self, context):
         """
         Add Context instance to this responder
