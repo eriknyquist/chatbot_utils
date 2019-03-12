@@ -70,6 +70,22 @@ class TestResponder(TestCase):
         self.assertEqual(r.get_response("deff")[0], 9)
         self.assertEqual(r.get_response("deffff")[0], 9)
 
+    def test_add_response_list_or_string(self):
+        r1 = Responder()
+        r2 = Responder()
+
+        r1.add_response("a|b", 1)
+        r1.add_default_response(2)
+
+        r2.add_response(["a", "b"], 1)
+        r2.add_default_response(2)
+
+        for r in [r1, r2]:
+            self.assertEqual(r.get_response("a")[0], 1)
+            self.assertEqual(r.get_response("b")[0], 1)
+            self.assertEqual(r.get_response("e")[0], 2)
+            self.assertEqual(r.get_response("gfnhvmnbvjm")[0], 2)
+
     def test_add_response_invalid(self):
         r = Responder()
         self.assertRaises(ValueError, r.add_response, 8, None)
@@ -89,6 +105,24 @@ class TestResponder(TestCase):
         self.assertEqual(r.get_response("def")[0], 9)
         self.assertEqual(r.get_response("deff")[0], 9)
         self.assertEqual(r.get_response("deffff")[0], 9)
+
+    def test_add_responses_list_or_string(self):
+        r1 = Responder()
+        r2 = Responder()
+
+        r1.add_responses(("a|b", 1), ("c|d", 2))
+        r1.add_default_response(3)
+
+        r2.add_responses((["a", "b"], 1), (["c", "d"], 2))
+        r2.add_default_response(3)
+
+        for r in [r1, r2]:
+            self.assertEqual(r.get_response("a")[0], 1)
+            self.assertEqual(r.get_response("b")[0], 1)
+            self.assertEqual(r.get_response("c")[0], 2)
+            self.assertEqual(r.get_response("d")[0], 2)
+            self.assertEqual(r.get_response("e")[0], 3)
+            self.assertEqual(r.get_response("gfnhvmnbvjm")[0], 3)
 
     def test_add_responses_invalid(self):
         r = Responder()
