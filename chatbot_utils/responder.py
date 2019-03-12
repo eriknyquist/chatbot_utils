@@ -1,10 +1,13 @@
 from chatbot_utils.redict import ReDict
 
+class NoResponse(object):
+    pass
+
 def _check_get_response(responsedict, text):
     try:
         response = responsedict[text]
     except KeyError:
-        return None, None
+        return NoResponse, None
 
     return response, responsedict.groups()
 
@@ -27,10 +30,10 @@ def _check_pattern_response_pair(pair):
 def _attempt_context_entry(contexts, text):
     for context in contexts:
         response, groups = _check_get_response(context.entry, text)
-        if response:
+        if response != NoResponse:
             return context, response, groups
 
-    return None, None, None
+    return None, NoResponse, None
 
 class Context(object):
     """
@@ -187,10 +190,10 @@ class Context(object):
         for chain in self.chains:
             if (len(chain) > 0):
                 resp, groups = _check_get_response(chain[0], text)
-                if resp:
+                if resp != NoResponse:
                     return chain, resp, groups
 
-        return None, None, None
+        return None, NoResponse, None
 
     def _get_chained_response(self, text):
         if not self.chain:
@@ -200,12 +203,12 @@ class Context(object):
                 self.chain_index = 1
                 return response, groups
 
-            return None, None
+            return NoResponse, None
 
         responsedict = self.chain[self.chain_index]
         resp, groups = _check_get_response(responsedict, text)
 
-        if resp:
+        if resp != NoResponse:
             if self.chain_index < (len(self.chain) - 1):
                 self.chain_index += 1
         elif self.chain_index > 0:
@@ -228,11 +231,11 @@ class Context(object):
             re.MatchObject.groups), if any, otherwise None.
         """
         resp, groups = self._get_chained_response(text)
-        if resp:
+        if resp != NoResponse:
             return resp, groups
 
         resp, groups = _check_get_response(self.responses, text)
-        if resp:
+        if resp != NoResponse:
             return resp, groups
 
         return _check_get_response(self.entry, text)
@@ -341,7 +344,7 @@ class Responder(object):
             the regular expression match (as returned by \
             re.MatchObject.groups), if any, otherwise None.
         """
-        response = None
+        response = NoResponse
         groups = None
 
         # If currently in a context, try to get a response from the context
@@ -357,9 +360,9 @@ class Responder(object):
 
         # If no contextual response is available, try to get a response from
         # the dict of contextless responses
-        if not response:
+        if response == NoResponse:
             response, groups = _check_get_response(self.responses, text)
-            if response:
+            if response != NoResponse:
                 # If we are currently in a context but only able to get a
                 # matching response from the contextless dict, set the current
                 # context to None
@@ -375,8 +378,5 @@ class Responder(object):
                 else:
                     response = self.default_response
                     groups = None
-
-        if not response:
-            return text, None
 
         return response, groups
