@@ -254,7 +254,7 @@ class Responder(object):
 
     def __init__(self):
         self.responses = ReDict()
-        self.default_response = None
+        self.default_response = NoResponse
 
         self.context = None
         self.contexts = []
