@@ -355,7 +355,7 @@ class Responder(object):
         # If currently in a context, try to get a response from the context
         if self.context:
             response, groups = self.context.get_response(text)
-            if not response:
+            if response == NoResponse:
                 # Try entering subcontexts contained in current context, if any
                 context, response, groups = _attempt_context_entry(
                     self.context.contexts, text)
