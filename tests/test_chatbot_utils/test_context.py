@@ -252,6 +252,13 @@ class TestContext(TestCase):
         self.assertEqual(c1.get_response("xyz")[0], 2)
         self.assertEqual(c1.get_response("xyzzzz")[0], 2)
 
+    def test_add_responses_invalid(self):
+        c = Context()
+        self.assertRaises(ValueError, c.add_responses, (True, 1))
+        self.assertRaises(ValueError, c.add_responses, (1, 1))
+        self.assertRaises(ValueError, c.add_responses, (Context(), 1))
+        self.assertRaises(ValueError, c.add_responses, ("valid", 1), (1, 1))
+
     def test_add_responses_list_or_string(self):
         c1 = Context().add_responses(("ab|c+", 1), ("xy|z*", 2))
         c2 = Context().add_responses((["ab", "c+"], 1), (["xy", "z*"], 2))
@@ -262,3 +269,98 @@ class TestContext(TestCase):
             self.assertEqual(c.get_response("cccc")[0], 1)
             self.assertEqual(c.get_response("xy")[0], 2)
             self.assertEqual(c.get_response("zzzz")[0], 2)
+
+    def test_add_context(self):
+        c1 = Context().add_entry_phrase("a", 0).add_response("b", 1)
+        c2 = Context().add_entry_phrase("x", 2).add_response("y", 3)
+        c1.add_context(c2)
+
+        r = Responder().add_context(c1).add_response("q", 4)
+
+        # Verify we're not in a context
+        self.assertEqual(r.get_response("q")[0], 4)
+        self.assertEqual(r.get_response("b")[0], NoResponse)
+        self.assertEqual(r.get_response("y")[0], NoResponse)
+
+        # Enter first context, verify we're in it
+        self.assertEqual(r.get_response("a")[0], 0)
+        self.assertEqual(r.get_response("b")[0], 1)
+
+        # Verify we're not in the subcontext
+        self.assertEqual(r.get_response("y")[0], NoResponse)
+
+        # Verify we're still in the first context
+        self.assertEqual(r.get_response("b")[0], 1)
+
+        # Enter subcontext contained in first context, verify we're in it
+        self.assertEqual(r.get_response("x")[0], 2)
+        self.assertEqual(r.get_response("y")[0], 3)
+
+        # Verify first context isn't active anymore
+        self.assertEqual(r.get_response("b")[0], NoResponse)
+
+        # ... but we should be able to re-enter it, since it's a top-level
+        # context added to the responder
+        self.assertEqual(r.get_response("a")[0], 0)
+        self.assertEqual(r.get_response("b")[0], 1)
+
+    def test_add_context_invalid(self):
+        c = Context()
+        self.assertRaises(ValueError, c.add_context, 5)
+        self.assertRaises(ValueError, c.add_context, True)
+        self.assertRaises(ValueError, c.add_context, "test")
+        self.assertRaises(ValueError, c.add_context, Responder())
+
+    def test_add_contexts(self):
+        c1 = Context().add_entry_phrase("a", 0).add_response("b", 1)
+        c2 = Context().add_entry_phrase("c", 2).add_response("d", 3)
+        c3 = Context().add_entry_phrase("e", 4).add_response("f", 5)
+        c1.add_contexts(c2, c3)
+
+        r = Responder().add_context(c1).add_response("q", 6)
+
+        # Verify we're not in a context
+        self.assertEqual(r.get_response("q")[0], 6)
+        self.assertEqual(r.get_response("b")[0], NoResponse)
+        self.assertEqual(r.get_response("d")[0], NoResponse)
+        self.assertEqual(r.get_response("f")[0], NoResponse)
+
+        # Verify we can't enter either of the subcontexts
+        self.assertEqual(r.get_response("c")[0], NoResponse)
+        self.assertEqual(r.get_response("e")[0], NoResponse)
+
+        # Enter first context
+        self.assertEqual(r.get_response("a")[0], 0)
+        self.assertEqual(r.get_response("b")[0], 1)
+
+        # Verify two subcontexts are not active
+        self.assertEqual(r.get_response("d")[0], NoResponse)
+        self.assertEqual(r.get_response("f")[0], NoResponse)
+
+        # Enter first subcontext
+        self.assertEqual(r.get_response("c")[0], 2)
+        self.assertEqual(r.get_response("d")[0], 3)
+
+        # Verify we can't enter 2nd subcontext from here
+        self.assertEqual(r.get_response("e")[0], NoResponse)
+        self.assertEqual(r.get_response("b")[0], NoResponse)
+
+        # Go back to first context
+        self.assertEqual(r.get_response("a")[0], 0)
+        self.assertEqual(r.get_response("b")[0], 1)
+
+        # Enter second subcontext
+        self.assertEqual(r.get_response("e")[0], 4)
+        self.assertEqual(r.get_response("f")[0], 5)
+
+        # Verify we can't enter 1st subcontext from here
+        self.assertEqual(r.get_response("c")[0], NoResponse)
+        self.assertEqual(r.get_response("b")[0], NoResponse)
+
+    def test_add_contexts_invalid(self):
+        c = Context()
+        self.assertRaises(ValueError, c.add_contexts, 5)
+        self.assertRaises(ValueError, c.add_contexts, True)
+        self.assertRaises(ValueError, c.add_contexts, "test")
+        self.assertRaises(ValueError, c.add_contexts, Responder())
+        self.assertRaises(ValueError, c.add_contexts, Context(), 0)
