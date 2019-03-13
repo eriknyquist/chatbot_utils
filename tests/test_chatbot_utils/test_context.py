@@ -174,3 +174,91 @@ class TestContext(TestCase):
         self.assertRaises(ValueError, c.add_entry_phrases, (False, 0))
         self.assertRaises(ValueError, c.add_entry_phrases, (None, 0))
         self.assertRaises(ValueError, c.add_entry_phrases, ("valid", 0), (None, 0))
+
+    def test_add_entry_phrases_list_or_string(self):
+        c1 = Context().add_entry_phrases(("a|b", 1), ("c", 2))
+        c1.add_response("d", 3)
+
+        c2 = Context().add_entry_phrases((["a", "b"], 4), (["c"], 5))
+        c2.add_response("e", 6)
+
+        r1 = Responder().add_response("x", 7).add_context(c1)
+        r2 = Responder().add_response("y", 8).add_context(c2)
+
+        self.assertEqual(r1.get_response("x")[0], 7)
+        self.assertEqual(r1.get_response("d")[0], NoResponse)
+
+        self.assertEqual(r2.get_response("y")[0], 8)
+        self.assertEqual(r1.get_response("e")[0], NoResponse)
+
+        # Verify we can enter context c1 with all 3 version of entry phrase
+        self.assertEqual(r1.get_response("a")[0], 1)
+        self.assertEqual(r1.get_response("d")[0], 3)
+        self.assertEqual(r1.get_response("x")[0], 7)
+
+        self.assertEqual(r1.get_response("b")[0], 1)
+        self.assertEqual(r1.get_response("d")[0], 3)
+        self.assertEqual(r1.get_response("x")[0], 7)
+
+        self.assertEqual(r1.get_response("c")[0], 2)
+        self.assertEqual(r1.get_response("d")[0], 3)
+        self.assertEqual(r1.get_response("x")[0], 7)
+
+        # Verify we can enter context c2 with all 3 version of entry phrase
+        self.assertEqual(r2.get_response("a")[0], 4)
+        self.assertEqual(r2.get_response("e")[0], 6)
+        self.assertEqual(r2.get_response("y")[0], 8)
+
+        self.assertEqual(r2.get_response("b")[0], 4)
+        self.assertEqual(r2.get_response("e")[0], 6)
+        self.assertEqual(r2.get_response("y")[0], 8)
+
+        self.assertEqual(r2.get_response("c")[0], 5)
+        self.assertEqual(r2.get_response("e")[0], 6)
+        self.assertEqual(r2.get_response("y")[0], 8)
+
+    def test_add_response(self):
+        c1 = Context().add_response("abc+", 1).add_response("xyz*", 2)
+        self.assertEqual(c1.get_response("abc")[0], 1)
+        self.assertEqual(c1.get_response("abcc")[0], 1)
+        self.assertEqual(c1.get_response("abcccc")[0], 1)
+        self.assertEqual(c1.get_response("xy")[0], 2)
+        self.assertEqual(c1.get_response("xyz")[0], 2)
+        self.assertEqual(c1.get_response("xyzzzz")[0], 2)
+
+    def test_add_response_list_or_string(self):
+        c1 = Context().add_response("ab|c+", 1).add_response("xy|z*", 2)
+        c2 = Context().add_response(["ab", "c+"], 1).add_response(["xy", "z*"], 2)
+
+        for c in [c1, c2]:
+            self.assertEqual(c.get_response("ab")[0], 1)
+            self.assertEqual(c.get_response("c")[0], 1)
+            self.assertEqual(c.get_response("cccc")[0], 1)
+            self.assertEqual(c.get_response("xy")[0], 2)
+            self.assertEqual(c.get_response("zzzz")[0], 2)
+
+    def test_add_response_invalid(self):
+        c = Context()
+        self.assertRaises(ValueError, c.add_response, True, 1)
+        self.assertRaises(ValueError, c.add_response, 1, 1)
+        self.assertRaises(ValueError, c.add_response, Context(), 1)
+
+    def test_add_responses(self):
+        c1 = Context().add_responses(("abc+", 1), ("xyz*", 2))
+        self.assertEqual(c1.get_response("abc")[0], 1)
+        self.assertEqual(c1.get_response("abcc")[0], 1)
+        self.assertEqual(c1.get_response("abcccc")[0], 1)
+        self.assertEqual(c1.get_response("xy")[0], 2)
+        self.assertEqual(c1.get_response("xyz")[0], 2)
+        self.assertEqual(c1.get_response("xyzzzz")[0], 2)
+
+    def test_add_responses_list_or_string(self):
+        c1 = Context().add_responses(("ab|c+", 1), ("xy|z*", 2))
+        c2 = Context().add_responses((["ab", "c+"], 1), (["xy", "z*"], 2))
+
+        for c in [c1, c2]:
+            self.assertEqual(c.get_response("ab")[0], 1)
+            self.assertEqual(c.get_response("c")[0], 1)
+            self.assertEqual(c.get_response("cccc")[0], 1)
+            self.assertEqual(c.get_response("xy")[0], 2)
+            self.assertEqual(c.get_response("zzzz")[0], 2)
