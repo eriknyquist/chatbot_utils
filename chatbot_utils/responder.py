@@ -165,9 +165,9 @@ class Context(object):
 
     def add_context(self, context):
         """
-        Add Context that can only be entered when already in this context
+        Add context that can only be entered when already in this context
 
-        :param Context context: context instance to add
+        :param chatbot_utils.responder.Context context: context instance to add
         """
         if not isinstance(context, Context):
             raise ValueError("add_context argument must be a Context instance")
@@ -177,9 +177,9 @@ class Context(object):
 
     def add_contexts(self, *contexts):
         """
-        Add one or more Context instances to this context
+        Add one or more context instances to this context
 
-        :param Context contexts: context instances to add
+        :param chatbot_utils.responder.Context contexts: context instances to add
         """
         for context in contexts:
             self.add_context(context)
@@ -315,9 +315,9 @@ class Responder(object):
 
     def add_context(self, context):
         """
-        Add Context instance to this responder
+        Add context instance to this responder
 
-        :param Context context: context instance to add
+        :param chatbot_utils.responder.Context context: context instance to add
         """
         if not isinstance(context, Context):
             raise ValueError("add_context argument must be a Context instance")
@@ -327,9 +327,9 @@ class Responder(object):
 
     def add_contexts(self, *contexts):
         """
-        Add one or more Context instances to this responder
+        Add one or more context instances to this responder
 
-        :param Context contexts: context instances to add
+        :param chatbot_utils.responder.Context contexts: context instances to add
         """
         for context in contexts:
             self.add_context(context)
