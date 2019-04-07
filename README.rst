@@ -35,7 +35,9 @@ Installation
 From PyPi
 #########
 
-TODO
+::
+
+    pip install chatbot_utils
 
 From Github
 ###########
