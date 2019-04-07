@@ -1,6 +1,14 @@
 chatbot_utils
 =============
 
+.. |travis_badge| image:: https://travis-ci.org/eriknyquist/chatbot_utils.svg?branch=master
+    :target: https://travis-ci.org/eriknyquist/chatbot_utils
+
+.. |docs_badge| image:: https://readthedocs.org/projects/chatbot-utils/badge/?version=latest
+    :target: https://text-game-maker.readthedocs.io
+
+|travis_badge| |docs_badge|
+
 .. contents:: Table of Contents
 
 Chatbot utils provides easy-to-use tools for building a chatbot capable of
