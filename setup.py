@@ -1,6 +1,7 @@
 import unittest
 import os
 from setuptools import setup, find_packages
+from distutils.core import Command
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 README = os.path.join(HERE, "README.rst")
@@ -24,11 +25,25 @@ if os.path.exists(REQFILE):
     with open(REQFILE, 'r') as fh:
         dependencies = fh.readlines()
 
+class TestRunner(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        suite = unittest.TestLoader().discover("tests")
+        t = unittest.TextTestRunner(verbosity = 2)
+        t.run(suite)
+
 setup(
     name='chatbot_utils',
-    version='0.1',
+    version='1.0.1',
     description=('Tools for creating chatbots'),
-    long_description=long_description,
+    long_description=long_description.strip(),
     url='http://github.com/eriknyquist/chatbot_utils',
     author='Erik Nyquist',
     author_email='eknyquist@gmail.com',
@@ -36,4 +51,5 @@ setup(
     install_requires=dependencies,
     packages=find_packages(),
     package_dir={'chatbot_utils':'chatbot_utils'},
+    cmdclass={'test': TestRunner}
 )

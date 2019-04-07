@@ -9,7 +9,7 @@ class TestReDict(TestCase):
 
         testitems = {"((foo+|bar*) )?%d" % i : i for i in range(numitems)}
 
-        for key, val in testitems.iteritems():
+        for key, val in testitems.items():
             dictobj[key] = val
 
         return testitems, dictobj
@@ -180,7 +180,7 @@ class TestReDict(TestCase):
             "s?": 6
         }
 
-        for key, val in testitems.iteritems():
+        for key, val in testitems.items():
             d[key] = val
 
         self.assertEqual(d["qqq"], 4)
@@ -198,7 +198,7 @@ class TestReDict(TestCase):
             "def?": 6
         }
 
-        for key, val in testitems.iteritems():
+        for key, val in testitems.items():
             d[key] = val
 
         d2 = d.copy()
@@ -227,19 +227,19 @@ class TestReDict(TestCase):
             "s?": 3
         }
 
-        for key, val in testitems.iteritems():
+        for key, val in testitems.items():
             d1[key] = val
 
-        for key, val in updateitems.iteritems():
+        for key, val in updateitems.items():
             d2[key] = val
 
         d1.update(d2)
         self.assertEqual(len(d1), len(testitems) + len(updateitems))
 
-        for key, val in testitems.iteritems():
+        for key, val in testitems.items():
             self.assertTrue(key in d1.keys())
             self.assertTrue(val in d1.values())
 
-        for key, val in updateitems.iteritems():
+        for key, val in updateitems.items():
             self.assertTrue(key in d1.keys())
             self.assertTrue(val in d1.values())

@@ -14,6 +14,8 @@ chatbot_utils
 Chatbot utils provides easy-to-use tools for building a chatbot capable of
 returning flexible, contextual responses when provided with text input.
 
+Supports Python 2.x and 3.x.
+
 By *Contextual responses*, I mean something like this;
 
 ::
