@@ -1,5 +1,7 @@
 import re
+import random
 from unittest import TestCase
+
 from chatbot_utils.redict import ReDict
 
 class TestReDict(TestCase):
@@ -243,3 +245,41 @@ class TestReDict(TestCase):
         for key, val in updateitems.items():
             self.assertTrue(key in d1.keys())
             self.assertTrue(val in d1.values())
+
+    def test_delete_items(self):
+        num_iterations = 50
+        d = ReDict()
+        added = {}
+        deleted = {}
+
+        for i in range(num_iterations):
+            expr = "(bar?|foo*) %d" % i
+            added[expr] = i
+            d[expr] = i
+
+        # Randomly delete some items
+        delete_count = random.randrange(20, 30)
+        for _ in range(delete_count):
+            key = random.choice(list(added.keys()))
+            deleted[key] = added[key]
+            del added[key]
+            del d[key]
+
+        # Verify deleted items are missing
+        for key, value in d:
+            if key in added:
+                self.assertTrue(key in d.keys())
+                self.assertEqual(value, added[key])
+            elif key in deleted:
+                self.assertFalse(key in d.keys())
+
+                try:
+                    _ = d[key]
+                except KeyError:
+                    keyerror = True
+                else:
+                    keyerror = False
+
+                self.assertTrue(keyerror)
+            else:
+                raise RuntimeError("Malformed test data")
