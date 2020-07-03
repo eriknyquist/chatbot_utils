@@ -160,14 +160,26 @@ class ReDict(dict):
 
         self.patterns["g%d" % self.groupid] = (pattern, value)
         self.groupid += 1
-
-        if self.compiled is not None:
-            self.compiled = None
+        self.compiled = None
 
     def __getitem__(self, text):
         m = self._do_match(text)
         self.subgroups = m.groups()[m.lastindex:]
         return self.patterns[m.lastgroup][1]
+
+    def __delitem__(self, pattern):
+        key = None
+        for groupname in self.patterns:
+            p, v = self.patterns[groupname]
+            if p == pattern:
+                key = groupname
+                break
+
+        if key is None:
+            raise KeyError("No such pattern in ReDict: '%s'" % pattern)
+
+        del self.patterns[key]
+        self.compiled = None
 
     def __contains__(self, text):
         try:
