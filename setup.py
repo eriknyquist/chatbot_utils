@@ -41,7 +41,7 @@ class TestRunner(Command):
 
 setup(
     name='chatbot_utils',
-    version='1.0.1',
+    version='1.0.2',
     description=('Tools for creating chatbots'),
     long_description=long_description.strip(),
     url='http://github.com/eriknyquist/chatbot_utils',
