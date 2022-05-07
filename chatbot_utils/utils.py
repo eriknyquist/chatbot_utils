@@ -8,6 +8,8 @@ class ContextCreator(object):
 
     Example usage:
 
+    ::
+
         from chatbot_utils.responder import Responder
         from chatbot_utils.utils import ContextCreator
 
