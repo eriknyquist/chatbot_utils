@@ -4,11 +4,8 @@ chatbot_utils
 .. |travis_badge| image:: https://travis-ci.org/eriknyquist/chatbot_utils.svg?branch=master
     :target: https://travis-ci.org/eriknyquist/chatbot_utils
 
-.. image:: https://readthedocs.org/projects/chatbot-utils/badge/?version=latest
-:target: https://chatbot-utils.readthedocs.io/en/latest/?badge=latest
-:alt: Documentation Status
-|travis_badge| |docs_badge|
-
+.. |docs_badge| image:: https://readthedocs.org/projects/chatbot-utils/badge/?version=latest
+    :target: https://chatbot-utils.readthedocs.io
 
 .. contents:: Table of Contents
 
