@@ -1,4 +1,6 @@
+from chatbot_utils.format_tokens import FormattedResponse
 from chatbot_utils.redict import ReDict
+
 
 class NoResponse(object):
     pass
@@ -303,6 +305,7 @@ class Responder(object):
 
         self.context = None
         self.contexts = []
+        self.variables = {}
 
     def compile(self):
         """
@@ -434,4 +437,11 @@ class Responder(object):
                     response = self.default_response
                     groups = None
 
-        return response, groups
+        if type(response) == str:
+            formatted = FormattedResponse(response, groups, self.variables)
+            self.variables.update(formatted.variables)
+            response_obj = formatted.formatted_response_text
+        else:
+            response_obj = response
+
+        return response_obj, groups
