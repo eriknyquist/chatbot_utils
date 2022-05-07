@@ -4,10 +4,11 @@ chatbot_utils
 .. |travis_badge| image:: https://travis-ci.org/eriknyquist/chatbot_utils.svg?branch=master
     :target: https://travis-ci.org/eriknyquist/chatbot_utils
 
-.. |docs_badge| image:: https://readthedocs.org/projects/chatbot-utils/badge/?version=latest
-    :target: https://text-game-maker.readthedocs.io
-
+.. image:: https://readthedocs.org/projects/chatbot-utils/badge/?version=latest
+:target: https://chatbot-utils.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
 |travis_badge| |docs_badge|
+
 
 .. contents:: Table of Contents
 
@@ -46,6 +47,12 @@ From Github
 #. ``cd chatbot_utils``
 #. ``python setup.py build``
 #. ``python setup.py install``
+
+API documentation
+-----------------
+
+Read the API documentation `here <https://chatbot-utils.readthedocs.io/>`_
+
 
 Example bot with chatbot_utils
 ------------------------------
