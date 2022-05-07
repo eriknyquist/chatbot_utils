@@ -33,7 +33,7 @@ class TestReDict(TestCase):
             test6 = "barrrrr %d" % i
 
             for testval in [test1, test2, test3, test4, test5, test6]:
-                self.assertEquals(i, d[testval])
+                self.assertEqual(i, d[testval])
 
     def test_groups_per_regex(self):
         d = ReDict()
