@@ -3,6 +3,9 @@ import os
 from setuptools import setup, find_packages
 from distutils.core import Command
 
+from chatbot_utils import __version__
+
+
 HERE = os.path.abspath(os.path.dirname(__file__))
 README = os.path.join(HERE, "README.rst")
 REQFILE = 'requirements.txt'
@@ -41,7 +44,7 @@ class TestRunner(Command):
 
 setup(
     name='chatbot_utils',
-    version='1.0.2',
+    version=__version__,
     description=('Tools for creating chatbots'),
     long_description=long_description.strip(),
     url='http://github.com/eriknyquist/chatbot_utils',
