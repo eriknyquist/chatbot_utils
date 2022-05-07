@@ -5,7 +5,9 @@ chatbot_utils
     :target: https://travis-ci.org/eriknyquist/chatbot_utils
 
 .. |docs_badge| image:: https://readthedocs.org/projects/chatbot-utils/badge/?version=latest
-    :target: https://chatbot-utils.readthedocs.io
+    :target: https://chatbot-utils.readthedocs.io/en/latest/?badge=latest
+
+|travis_badge| |docs_badge|
 
 .. contents:: Table of Contents
 
