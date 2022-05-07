@@ -35,6 +35,14 @@ def _attempt_context_entry(contexts, text):
 
     return None, NoResponse, None
 
+def _attempt_context_exit(context, text):
+    response, groups = _check_get_response(context.exit, text)
+    if response != NoResponse:
+        return response, groups
+
+    return NoResponse, None
+
+
 class Context(object):
     """
     Class representing a "discussion" context, allowing for a Responder that
@@ -42,6 +50,7 @@ class Context(object):
     """
     def __init__(self, lists=None):
         self.entry = ReDict()
+        self.exit = ReDict()
         self.responses = ReDict()
         self.chains = []
         self.chain = None
@@ -128,6 +137,42 @@ class Context(object):
         """
         for pair in pattern_response_pairs:
             self.add_entry_phrase(*pair)
+
+        return self
+
+    def add_exit_phrase(self, patterns, response):
+        """
+        Add a pattern/response pair to be used as an exit point for
+        this context. If input matching matching one of the patterns passed here
+        is seen, Responders will return the corresponding response object and
+        exit the context.
+
+        :param patterns: regular expression or list of regular expressions. If \
+            the input passed to ``get_response`` matches one of these \
+            patterns, then the object passed here as ``response`` will be \
+            returned.
+        :param object response: object to return from ``get_response`` if the \
+            passed input matches one of the regular expressions passed here as
+            ``response``.
+        """
+        pattern, response = _check_pattern_response_pair((patterns, response))
+        self.exit[pattern] = response
+        return self
+
+    def add_exit_phrases(self, *pattern_response_pairs):
+        """
+        Add one or more pattern/response pairs to be used as exit points for
+        this context. If input matching matching one of the patterns passed here
+        is seen, Responders will return the corresponding response object and
+        exit the context.
+
+        :param pattern_response_pairs: one or more pattern/response pairs, \
+            where a pattern/response pair is a tuple of the form \
+            ``(regexs, value)``, where ``regexs`` is a regular expression or \
+            list of regular expressions and ``value`` is an arbitrary object
+        """
+        for pair in pattern_response_pairs:
+            self.add_exit_phrase(*pair)
 
         return self
 
@@ -362,6 +407,11 @@ class Responder(object):
 
                 if context:
                     self.context = context
+                else:
+                    # Subcontext entry failed, see if we need to exit the current context
+                    response, groups = _attempt_context_exit(self.context, text)
+                    if response != NoResponse:
+                        self.context = None
 
         # If no contextual response is available, try to get a response from
         # the dict of contextless responses
