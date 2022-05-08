@@ -120,7 +120,7 @@ class Context(object):
         :param object response: object to return from ``get_response`` if the \
             passed input matches one of the regular expressions passed here as \
             ``response``. The response may be any object type, but if it is a single \
-            string, then the string may contain format tokens; see :doc:`details about format tokens <format_tokens>`
+            string, then the string may contain format tokens; see :doc:`details about format tokens <format_tokens_details>`
         """
         pattern, response = _check_pattern_response_pair((patterns, response))
         self.entry[pattern] = response
