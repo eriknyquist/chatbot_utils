@@ -1,6 +1,13 @@
 from chatbot_utils import constants as const
 
 
+class InvalidFormatTokenError(Exception):
+    """
+    Raised when an unknown format token is used in a response phrase
+    """
+    pass
+
+
 class FormattedResponse(object):
     """
     Helper class for parsing variable assignments out of a response phrase, and
@@ -37,7 +44,7 @@ class FormattedResponse(object):
             try:
                 assignment_str = assignment_str.format(**fmtargs)
             except KeyError:
-                raise KeyError("Invalid format token in variable assignment")
+                raise InvalidFormatTokenError("Invalid format token in variable assignment")
 
             # Split up the string and populate 'new_vars' dict
             assignments = assignment_str.split(const.VAR_ASSIGNMENT_SEP)
@@ -52,4 +59,4 @@ class FormattedResponse(object):
             self.formatted_response_text = response_text.format(**fmtargs, **variables)
         except (KeyError, IndexError):
 
-            raise KeyError("Invalid format token in response '%s'" % response_text)
+            raise InvalidFormatTokenError("Invalid format token in response '%s'" % response_text)

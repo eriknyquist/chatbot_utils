@@ -5,6 +5,7 @@ chatbot_utils documentation
    :caption: API Documentation:
 
    modules
+   format_tokens
 
 Indices and tables
 ==================
